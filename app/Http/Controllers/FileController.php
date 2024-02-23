@@ -52,14 +52,14 @@ class FileController extends Controller
         for (; ; ) {
           $randomName = Str::random(10);
           $fileСompare = File::all()
-            ->where('pash', ("file/" . $randomName))
+            ->where('pash', ("file/" . $randomName . '.' . $fileExtension))
             ->first();
           if (!$fileСompare) {
             break;
           }
         }
 
-        $pash = $value->storeAs('file', $randomName);
+        $pash = $value->storeAs('file', $randomName . '.' . $fileExtension);
 
         $file = new File();
         $file->user_id = $user->id;
@@ -88,14 +88,13 @@ class FileController extends Controller
   public function change($file_id, FileChangeRequest $request)
   {
     $user = auth()->user();
-    $file = File::all()
-      ->where('pash', ("file/" . $file_id))
+    $file = File::where('pash', 'like', ("file/" . $file_id . "%"))
       ->first();
     if (!$file) {
       return response([
         "success" => false,
         "message" => "Not found",
-      ], 401);
+      ], 404);
     }
     if ($file->user_id != $user->id) {
       return response([
@@ -126,6 +125,32 @@ class FileController extends Controller
     return response([
       "success" => true,
       "message" => "Renamed",
+    ]);
+  }
+  public function delete($file_id, Request $request)
+  {
+    $user = auth()->user();
+    $file = File::where('pash', 'like', ("file/" . $file_id . "%"))
+      ->first();
+    if (!$file) {
+      return response([
+        "success" => false,
+        "message" => "Not found",
+      ], 404);
+    }
+    if ($file->user_id != $user->id) {
+      return response([
+        "success" => false,
+        "message" => "Forbidden for you",
+      ], 401);
+    }
+
+    Storage::delete($file->pash);
+    // $file->delete();
+
+    return response([
+      "success" => true,
+      "message" => "File already deleted",
     ]);
   }
 }

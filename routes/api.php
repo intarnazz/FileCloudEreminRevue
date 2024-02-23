@@ -28,6 +28,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/logout', [UserController::class, 'logout']);
     Route::post('/files', [FileController::class, 'add']);
     Route::patch('/files/{file_id}', [FileController::class, 'change']);
+    Route::delete('/files/{file_id}', [FileController::class, 'delete']);
 });
 
 
