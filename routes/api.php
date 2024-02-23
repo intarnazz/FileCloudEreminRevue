@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FileController;
+
 
 
 header('Accept: application/json');
@@ -24,4 +26,8 @@ Route::post('/authorization', [UserController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/logout', [UserController::class, 'logout']);
+    Route::post('/files', [FileController::class, 'add']);
+    Route::patch('/files/{file_id}', [FileController::class, 'change']);
 });
+
+
