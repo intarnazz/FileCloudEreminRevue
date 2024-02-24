@@ -31,7 +31,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/files/{file_id}', [FileController::class, 'delete']);
     Route::get('/files/{file_id}', [FileController::class, 'get']);
     Route::post('/files/{file_id}/accesses', [FileController::class, 'setAccess']);
-    Route::post('/files/{file_id}/accesses', [FileController::class, 'delAccess']);
+    Route::delete('/files/{file_id}/accesses', [FileController::class, 'delAccess']);
 });
 
 

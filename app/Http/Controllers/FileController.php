@@ -195,18 +195,19 @@ class FileController extends Controller
         "message" => "Forbidden for you",
       ], 401);
     }
-
-    $coAutor = Access::where('user_id', $file->id)
-      ->where('file_id', $file->id)
-      ->first();
-    if (!$coAutor) {
-      $coAutor = User::where('email', $request->email)
+    if ($user->email != $request->email) {
+      $coAutor_user = User::where('email', $request->email)
         ->first();
 
-      $access = new Access();
-      $access->file_id = $file->id;
-      $access->user_id = $coAutor->id;
-      $access->save();
+      $coAutor_access = Access::where('user_id', $coAutor_user->id)
+        ->where('file_id', $file->id)
+        ->first();
+      if (!$coAutor_access) {
+        $access = new Access();
+        $access->file_id = $file->id;
+        $access->user_id = $coAutor_user->id;
+        $access->save();
+      }
     }
 
     $coAutors = Access::where('file_id', $file->id)
@@ -226,7 +227,51 @@ class FileController extends Controller
         "type" => "co-author",
       ];
     }
+    return response($res);
+  }
+  public function delAccess($file_id, AccessRequest $request)
+  {
+    $user = auth()->user();
+    $file = File::where('pash', 'like', ("file/" . $file_id . "%"))
+      ->first();
+    if (!$file) {
+      return response([
+        "success" => false,
+        "message" => "Not found",
+      ], 404);
+    }
+    if ($file->user_id != $user->id) {
+      return response([
+        "success" => false,
+        "message" => "Forbidden for you",
+      ], 401);
+    }
+    $coAutor = User::where('email', $request->email)
+      ->first();
 
+    $coAutor = Access::where('user_id', $coAutor->id)
+      ->where('file_id', $file->id)
+      ->first();
+    if ($coAutor) {
+      $coAutor->delete();
+    }
+    $coAutors = Access::where('file_id', $file->id)
+      ->with('user')
+      ->get();
+
+    $res[] = [
+      "fullname" => ($user->first_name . " " . $user->last_name),
+      "email" => $user->email,
+      "type" => "author",
+    ];
+
+    foreach ($coAutors as $coAutor) {
+      $res[] = [
+        "fullname" => ($coAutor->user->first_name . " " . $coAutor->user->last_name),
+        "email" => $coAutor->user->email,
+        "type" => "co-author",
+      ];
+    }
     return response($res);
   }
 }
