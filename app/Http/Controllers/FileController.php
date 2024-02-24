@@ -11,12 +11,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+
+
 class FileController extends Controller
 {
   public function add(Request $request)
   {
-    $host = "http://laravel/";
-
     $user = auth()->user();
     $files = $request->allFiles();
 
@@ -74,7 +74,7 @@ class FileController extends Controller
           "success" => true,
           "message" => "Success",
           "name" => ($fileName . '.' . $fileExtension),
-          "url" => $host . "files/" . $name,
+          "url" => env('APP_URL') . "files/" . $name,
           "file_id" => $randomName,
         ];
       } else {
@@ -82,7 +82,7 @@ class FileController extends Controller
           "success" => false,
           "message" => "File not loaded",
           "name" => $name,
-          "url" => $host . "files/" . $name
+          "url" => env('APP_URL') . "files/" . $name
         ];
       }
     }
@@ -270,6 +270,42 @@ class FileController extends Controller
         "fullname" => ($coAutor->user->first_name . " " . $coAutor->user->last_name),
         "email" => $coAutor->user->email,
         "type" => "co-author",
+      ];
+    }
+    return response($res);
+  }
+  public function getFile()
+  {
+
+    $user = auth()->user();
+    $files = File::where('user_id', $user->id)
+      ->get();
+
+    foreach ($files as $file) {
+      $coAutors = Access::where('file_id', $file->id)
+        ->with('user')
+        ->get();
+      $accesses = [];
+      $accesses[] = [
+        "fullname" => ($user->first_name . " " . $user->last_name),
+        "email" => $user->email,
+        "type" => "author",
+      ];
+      foreach ($coAutors as $coAutor) {
+        $accesses[] = [
+          "fullname" => ($coAutor->user->first_name . " " . $coAutor->user->last_name),
+          "email" => $coAutor->user->email,
+          "type" => "co-author",
+        ];
+      }
+
+
+      $file_id = pathinfo($file->pash, PATHINFO_FILENAME);
+      $res[] = [
+        "file_id" => $file_id,
+        "name" => $file->name,
+        "url" => (env('APP_URL') . "file/" . $file_id),
+        "accesses" => $accesses,
       ];
     }
     return response($res);
