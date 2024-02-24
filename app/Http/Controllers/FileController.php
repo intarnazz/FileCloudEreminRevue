@@ -298,8 +298,6 @@ class FileController extends Controller
           "type" => "co-author",
         ];
       }
-
-
       $file_id = pathinfo($file->pash, PATHINFO_FILENAME);
       $res[] = [
         "file_id" => $file_id,
@@ -308,6 +306,26 @@ class FileController extends Controller
         "accesses" => $accesses,
       ];
     }
+    return response($res);
+  }
+  public function shared()
+  {
+    $user = auth()->user();
+    $files = Access::where('user_id', $user->id)
+      ->get();
+    $res = [];
+    foreach ($files as $file) {
+      $file = File::where('id', $file->file_id)
+      ->first();
+      $file_id = pathinfo($file->pash, PATHINFO_FILENAME);
+      $res[] = [
+        "file_id" => $file_id,
+        "name" => $file->name,
+        "url" => (env('APP_URL') . "file/" . $file_id),
+      ];
+    }
+
+
     return response($res);
   }
 }
