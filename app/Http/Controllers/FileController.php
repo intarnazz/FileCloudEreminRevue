@@ -36,7 +36,7 @@ class FileController extends Controller
           || $fileExtension == "zip"
           || $fileExtension == "jpeg"
           || $fileExtension == "jpg"
-          || $fileExtension == "jpg"
+          || $fileExtension == "png"
         )
       ) {
         $originalFileName = $fileName;
